@@ -1,87 +1,76 @@
-import { useState, useEffect } from 'react';
-import Modal from './components/Modal';
-import Searchbar from './components/Searchbar';
-import Button from './components/Button';
-import ImageGallery from './components/ImageGallery';
-import { Rings } from 'react-loader-spinner';
-import { productsApi } from './shared/service/Api';
-import './App.css';
+import { useState, useEffect } from "react";
+import Modal from "./components/Modal";
+import Searchbar from "./components/Searchbar";
+import Button from "./components/Button";
+import ImageGallery from "./components/ImageGallery";
+import { Rings } from "react-loader-spinner";
+import { productsApi } from "./shared/service/Api";
+import "./App.css";
 
-const initialState = {
-  pictures: [],
-  isLoading: false,
-  error: false,
-  finish: false,
-  showModal: false,
-  largeImageURL: '',
-  tags: '',
-};
+// const initialState = {
+//   pictures: [],
+//   isLoading: false,
+//   error: false,
+//   finish: false,
+//   largeImageURL: '',
+//   tags: '',
+// };
 const App = () => {
   const [page, setPage] = useState(1);
-  const [query, setQuery] = useState('');
-  const [state, setState] = useState(initialState);
+  const [query, setQuery] = useState("");
+  const [pictures, setPictures] = useState([]);
+  const [error, setError] = useState(null);
+  const [finish, setFinish] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [modal, setModal] = useState(null); //{largeImageURL,tegs}
 
-  const onChangeQwery = query => {
+  const onChangeQwery = (query) => {
     setQuery(query);
+    setPage(1)
+    setPictures([]);
   };
 
   useEffect(() => {
     if (!query) return;
-    setState({ pictures: [], isLoading: true, finish: false });
+    setFinish(false);
     fetchProducts();
   }, [query]);
+
   useEffect(() => {
     if (!query) return;
     fetchProducts();
   }, [page]);
 
   const fetchProducts = async () => {
+    setIsLoading(true);
     try {
       const { data } = await productsApi.searchPictures(page, query);
-      setState(({ pictures }) => {
-        const newState = {
-          pictures: [...pictures, ...data.hits],
-          isLoading: false,
-          error: false,
-        };
-        if (data.hits.length < 11) {
-          newState.finish = true;
-        }
-        if (!data.hits.length) {
-          newState.error = true;
-        }
-        return newState;
-      });
+      setPictures([...pictures, ...data.hits]);
+      if (data.hits.length < 12) {
+        setFinish(true);
+      }
+      if (!data.hits.length) {
+        throw Error("Not images");
+      }
     } catch (error) {
-      setState({
-        isLoading: false,
-        error,
-      });
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
-  const { pictures, error, isLoading, finish, showModal, largeImageURL, tags } = state;
+
   const loadMore = () => {
-    setPage(prevState => {
+    setPage((prevState) => {
       return prevState + 1;
     });
-    state.isLoading = true;
-    setState({ ...state });
   };
 
-  const handleOpenModal = id => {
-    setState(prevState => {
-      const { pictures } = prevState;
-
-      const { largeImageURL, tags } = pictures.find(picture => picture.id === id);
-      prevState.showModal = true;
-      prevState.largeImageURL = largeImageURL;
-      prevState.tags = tags;
-      return { ...prevState };
-    });
+  const handleOpenModal = (modal) => {
+    // {url, tags}
+    setModal(modal);
   };
-  const closeModal = e => {
-    state.showModal = false;
-    setState({ ...state });
+  const closeModal = (e) => {
+    setModal(null);
   };
   return (
     <div className="App">
@@ -90,9 +79,9 @@ const App = () => {
       {!error && <ImageGallery pictures={pictures} onClick={handleOpenModal} />}
       {!finish && pictures.length !== 0 && <Button onClick={loadMore} />}
       {isLoading && <Rings />}
-      {showModal && (
+      {modal && (
         <Modal showModal={closeModal}>
-          <img src={largeImageURL} alt={tags} />
+          <img src={modal.largeImageURL} alt={modal.tags} />
         </Modal>
       )}
     </div>

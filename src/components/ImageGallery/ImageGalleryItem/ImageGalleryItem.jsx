@@ -1,12 +1,16 @@
-import styles from './ImageGalleryItem.module.css';
-import PropTypes from 'prop-types';
+import styles from "./ImageGalleryItem.module.css";
+import PropTypes from "prop-types";
 
 function ImageGalleryItem({ picture, onClick }) {
+  const { tags, largeImageURL } = picture;
   return (
-    <li className={styles.imageGalleryItem} onClick={() => onClick(picture.id)}>
+    <li
+      className={styles.imageGalleryItem}
+      onClick={() => onClick({ largeImageURL, tags })}
+    >
       <img
         src={picture.webformatURL}
-        alt={picture.tags}
+        alt={tags}
         className={styles.imageGalleryItem_image}
       />
     </li>

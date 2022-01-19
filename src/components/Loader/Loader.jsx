@@ -1,6 +1,6 @@
-import Loader from 'react-loader-spinner';
-import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
-import styles from './Loader.module.css';
+import Loader from "react-loader-spinner";
+import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
+import styles from "./Loader.module.css";
 
 const loader = () => {
   return (
